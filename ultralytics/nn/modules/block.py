@@ -37,6 +37,7 @@ __all__ = (
     "C2fPSA",
     "C3Ghost",
     "C3k2",
+    "C3k2Ghost",
     "C3x",
     "CBFuse",
     "CBLinear",
@@ -1106,6 +1107,48 @@ class C3k2(C2f):
         )
 
 
+class C3k2Ghost(C2f):
+    """Faster and lighter implementation of CSP Bottleneck with C3kGhost and GhostBottleneck."""
+
+    def __init__(
+        self,
+        c1: int,
+        c2: int,
+        n: int = 1,
+        c3k_ghost: bool = False,
+        e: float = 0.5,
+        attn: bool = False,
+        g: int = 1,
+        shortcut: bool = True,
+        k: int = 3
+    ):
+        """
+
+        Args:
+            c1 (int): Input channels.
+            c2 (int): Output channels.
+            n (int): Number of blocks.
+            c3k_ghost (bool): Whether to use C3kGhost blocks.
+            e (float): Expansion ratio.
+            attn (bool): Whether to use attention blocks.
+            g (int): Groups for convolutions.
+            shortcut (bool): Whether to use shortcut connections.
+            k (int): Kernel size for GhostBottleneck.
+        """
+        super().__init__(c1, c2, n, shortcut, g, e)
+        self.m = nn.ModuleList(
+            nn.Sequential(
+                GhostBottleneck(self.c, self.c, k),
+                PSABlock(self.c, attn_ratio=0.5, num_heads=max(self.c // 64, 1)),
+            )
+            if attn
+            else C3kGhost(self.c, self.c, 2, shortcut, g, k=k)  # use `e=0.5` for keeping the same form of C3k2 Module
+            if c3k_ghost
+            else GhostBottleneck(self.c, self.c, k)
+            for _ in range(n)
+        )
+
+
 class C3k(C3):
     """C3k is a CSP bottleneck module with customizable kernel sizes for feature extraction in neural networks."""
 
@@ -1125,6 +1168,26 @@ class C3k(C3):
         c_ = int(c2 * e)  # hidden channels
         # self.m = nn.Sequential(*(RepBottleneck(c_, c_, shortcut, g, k=(k, k), e=1.0) for _ in range(n)))
         self.m = nn.Sequential(*(Bottleneck(c_, c_, shortcut, g, k=(k, k), e=1.0) for _ in range(n)))
+
+
+class C3kGhost(C3):
+    """C3kGhost is the C3k module with GhostBottleneck."""
+
+    def __init__(self, c1: int, c2: int, n: int = 1, shortcut: bool = True, g: int = 1, e: float = 0.5, k: int = 3):
+        """
+
+        Args:
+            c1 (int): Input channels.
+            c2 (int): Output channels.
+            n (int): Number of Bottleneck blocks.
+            shortcut (bool): Whether to use shortcut connections.
+            g (int): Groups for convolutions.
+            e (float): Expansion ratio.
+            k (int): Kernel size.
+        """
+        super().__init__(c1, c2, n, shortcut, g, e)
+        c_ = int(c2 * e)  # hidden channels
+        self.m = nn.Sequential(*(GhostBottleneck(c_, c_, k) for _ in range(n)))  # use GhostBottleneck instead
 
 
 class RepVGGDW(torch.nn.Module):
