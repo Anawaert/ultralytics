@@ -453,21 +453,22 @@ The below table contains valid Ultralytics image formats.
 
     HEIC/HEIF formats require `pi-heif`, which is installed automatically on first use. AVIF is supported natively by Pillow.
 
-| Image Suffixes | Example Predict Command          | Reference                                                                  |
-| -------------- | -------------------------------- | -------------------------------------------------------------------------- |
-| `.avif`        | `yolo predict source=image.avif` | [AV1 Image File Format](https://en.wikipedia.org/wiki/AVIF)                |
-| `.bmp`         | `yolo predict source=image.bmp`  | [Microsoft BMP File Format](https://en.wikipedia.org/wiki/BMP_file_format) |
-| `.dng`         | `yolo predict source=image.dng`  | [Adobe DNG](https://en.wikipedia.org/wiki/Digital_Negative)                |
-| `.heic`        | `yolo predict source=image.heic` | [High Efficiency Image Format](https://en.wikipedia.org/wiki/HEIF)         |
-| `.heif`        | `yolo predict source=image.heif` | [High Efficiency Image Format](https://en.wikipedia.org/wiki/HEIF)         |
-| `.jp2`         | `yolo predict source=image.jp2`  | [JPEG 2000](https://en.wikipedia.org/wiki/JPEG_2000)                       |
-| `.jpeg`        | `yolo predict source=image.jpeg` | [JPEG](https://en.wikipedia.org/wiki/JPEG)                                 |
-| `.jpg`         | `yolo predict source=image.jpg`  | [JPEG](https://en.wikipedia.org/wiki/JPEG)                                 |
-| `.mpo`         | `yolo predict source=image.mpo`  | [Multi Picture Object](https://fileinfo.com/extension/mpo)                 |
-| `.png`         | `yolo predict source=image.png`  | [Portable Network Graphics](https://en.wikipedia.org/wiki/PNG)             |
-| `.tif`         | `yolo predict source=image.tif`  | [Tag Image File Format](https://en.wikipedia.org/wiki/TIFF)                |
-| `.tiff`        | `yolo predict source=image.tiff` | [Tag Image File Format](https://en.wikipedia.org/wiki/TIFF)                |
-| `.webp`        | `yolo predict source=image.webp` | [WebP](https://en.wikipedia.org/wiki/WebP)                                 |
+| Image Suffixes | Example Predict Command              | Reference                                                                  |
+| -------------- | ------------------------------------ | -------------------------------------------------------------------------- |
+| `.avif`        | `yolo predict source=image.avif`     | [AV1 Image File Format](https://en.wikipedia.org/wiki/AVIF)                |
+| `.bmp`         | `yolo predict source=image.bmp`      | [Microsoft BMP File Format](https://en.wikipedia.org/wiki/BMP_file_format) |
+| `.dng`         | `yolo predict source=image.dng`      | [Adobe DNG](https://en.wikipedia.org/wiki/Digital_Negative)                |
+| `.heic`        | `yolo predict source=image.heic`     | [High Efficiency Image Format](https://en.wikipedia.org/wiki/HEIF)         |
+| `.heif`        | `yolo predict source=image.heif`     | [High Efficiency Image Format](https://en.wikipedia.org/wiki/HEIF)         |
+| `.jp2`         | `yolo predict source=image.jp2`      | [JPEG 2000](https://en.wikipedia.org/wiki/JPEG_2000)                       |
+| `.jpeg`        | `yolo predict source=image.jpeg`     | [JPEG](https://en.wikipedia.org/wiki/JPEG)                                 |
+| `.jpeg2000`    | `yolo predict source=image.jpeg2000` | [JPEG 2000](https://en.wikipedia.org/wiki/JPEG_2000)                       |
+| `.jpg`         | `yolo predict source=image.jpg`      | [JPEG](https://en.wikipedia.org/wiki/JPEG)                                 |
+| `.mpo`         | `yolo predict source=image.mpo`      | [Multi Picture Object](https://fileinfo.com/extension/mpo)                 |
+| `.png`         | `yolo predict source=image.png`      | [Portable Network Graphics](https://en.wikipedia.org/wiki/PNG)             |
+| `.tif`         | `yolo predict source=image.tif`      | [Tag Image File Format](https://en.wikipedia.org/wiki/TIFF)                |
+| `.tiff`        | `yolo predict source=image.tiff`     | [Tag Image File Format](https://en.wikipedia.org/wiki/TIFF)                |
+| `.webp`        | `yolo predict source=image.webp`     | [WebP](https://en.wikipedia.org/wiki/WebP)                                 |
 
 ### Videos
 
@@ -604,7 +605,7 @@ IDs: `torch.uint8`, `torch.int16`, or `torch.int32`, depending on class count.
 | `cuda()`      | `Results`              | Returns a copy of the Results object with all tensors moved to GPU memory.                               |
 | `to()`        | `Results`              | Returns a copy of the Results object with tensors moved to specified device and dtype.                   |
 | `new()`       | `Results`              | Creates a new Results object with the same image, path, names, and speed attributes.                     |
-| `plot()`      | `np.ndarray`           | Plots detection results on an input RGB image and returns the annotated image.                           |
+| `plot()`      | `np.ndarray`           | Plots detection results on an input BGR image and returns the annotated image.                           |
 | `show()`      | `None`                 | Displays the image with annotated inference results.                                                     |
 | `save()`      | `str`                  | Saves annotated inference results image to file and returns the filename.                                |
 | `verbose()`   | `str`                  | Returns a log string for each task, detailing detection and classification outcomes.                     |
@@ -879,7 +880,7 @@ The `plot()` method supports various arguments to customize the output:
 | `save`       | `bool`                 | Save the annotated image to a file specified by `filename`.                | `False`           |
 | `filename`   | `str`                  | Path and name of the file to save the annotated image if `save` is `True`. | `None`            |
 | `color_mode` | `str`                  | Specify the color mode, e.g., 'instance' or 'class'.                       | `'class'`         |
-| `txt_color`  | `tuple[int, int, int]` | RGB text color for bounding box and image classification label.            | `(255, 255, 255)` |
+| `txt_color`  | `tuple[int, int, int]` | BGR text color for bounding box and image classification label.            | `(255, 255, 255)` |
 
 ## Thread-Safe Inference
 

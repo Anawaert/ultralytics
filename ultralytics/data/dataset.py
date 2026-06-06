@@ -52,8 +52,8 @@ DATASET_CACHE_VERSION = "1.0.3"
 class YOLODataset(BaseDataset):
     """Dataset class for loading object detection and/or segmentation labels in YOLO format.
 
-    This class supports loading data for object detection, segmentation, pose estimation, and oriented bounding box
-    (OBB) tasks using the YOLO format.
+    This class supports loading data for object detection, instance segmentation, pose estimation, and oriented bounding
+    box (OBB) tasks using the YOLO format.
 
     Attributes:
         use_segments (bool): Indicates if segmentation masks should be used.
@@ -1055,7 +1055,7 @@ class ClassificationDataset:
             cache = load_dataset_cache_file(path)  # attempt to load a *.cache file
             assert cache["version"] == DATASET_CACHE_VERSION  # matches current version
             assert cache["hash"] == get_hash([x[0] for x in self.samples])  # identical hash
-            nf, nc, n, samples = cache.pop("results")  # found, missing, empty, corrupt, total
+            nf, nc, n, samples = cache.pop("results")  # found, corrupt, total, samples
             if LOCAL_RANK in {-1, 0}:
                 d = f"{desc} {nf} images, {nc} corrupt"
                 TQDM(None, desc=d, total=n, initial=n)
