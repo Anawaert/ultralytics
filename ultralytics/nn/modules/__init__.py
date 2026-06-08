@@ -62,7 +62,9 @@ from .block import (
 )
 from .conv import (
     CBAM,
+    CCAM,
     ChannelAttention,
+    CoordinateAttention,
     Concat,
     Conv,
     Conv2,
@@ -115,6 +117,7 @@ __all__ = (
     "C3",
     "C3TR",
     "CBAM",
+    "CCAM",
     "CIB",
     "DFL",
     "ELAN1",
@@ -142,6 +145,7 @@ __all__ = (
     "CBFuse",
     "CBLinear",
     "ChannelAttention",
+    "CoordinateAttention",
     "Classify",
     "Concat",
     "ContrastiveHead",

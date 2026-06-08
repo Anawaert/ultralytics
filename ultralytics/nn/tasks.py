@@ -39,6 +39,7 @@ from ultralytics.nn.modules import (
     C3x,
     CBFuse,
     CBLinear,
+    CCAM,
     Classify,
     Concat,
     Conv,
@@ -1708,6 +1709,7 @@ def parse_model(d, ch, verbose=True):
             SCDown,
             C2fCIB,
             A2C2f,
+            CCAM,
         }
     )
     repeat_modules = frozenset(  # modules with 'repeat' arguments

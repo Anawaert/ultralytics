@@ -24,6 +24,8 @@ __all__ = (
     "LightConv",
     "RepConv",
     "SpatialAttention",
+    "CoordinateAttention",
+    "CCAM",
 )
 
 
@@ -546,6 +548,62 @@ class ChannelAttention(nn.Module):
         return x * self.act(self.fc(self.pool(x)))
 
 
+class CoordinateAttention(nn.Module):
+    """
+    坐标注意力模块。
+    """
+
+    def __init__(self, c1, r=16):
+        """
+        初始化坐标注意力。
+
+        Args:
+            c1 (int): 输入通道数。
+            r (int): 中间通道缩减比例，建议为不小于 8 的可将输入通道数整除的值。
+        """
+        super().__init__()
+        self.avg_pool_h = nn.AdaptiveAvgPool2d((None, 1))
+        self.avg_pool_w = nn.AdaptiveAvgPool2d((1, None))
+        self.concat_h = Concat(dimension=2)
+        mip = max(8, c1 // r)
+        self.mid = nn.Sequential(
+            nn.Conv2d(c1, mip, kernel_size=1, stride=1, padding=0),
+            nn.BatchNorm2d(mip),
+            nn.Hardswish()
+        )
+        self.conv_h = nn.Sequential(
+            nn.Conv2d(mip, c1, kernel_size=1, stride=1, padding=0),
+            nn.Sigmoid()
+        )
+        self.conv_w = nn.Sequential(
+            nn.Conv2d(mip, c1, kernel_size=1, stride=1, padding=0),
+            nn.Sigmoid()
+        )
+
+    def forward(self, x):
+        """
+        坐标注意力的前向传播。
+
+        Args:
+            x (torch.Tensor): 输入张量。
+
+        Returns:
+            (torch.Tensor): 应用了坐标注意力的输出张量。
+        """
+        n, c, h, w = x.size()
+
+        # 改进：将张量拷贝一份到 CPU 后进行池化再将池化结果送回原设备。
+        avg_pool_h_out = self.avg_pool_h(x.cpu()).to(x.device)  # 形状为 (n, c, h, 1)
+        avg_pool_w_out = self.avg_pool_w(x.cpu()).to(x.device).permute(0, 1, 3, 2)  # 变成 (n, c, w, 1)
+
+        y = self.mid(self.concat_h([avg_pool_h_out, avg_pool_w_out]))  # 按高度维度拼接后变换为 (n, mid_c, h+w, 1)
+        avg_pool_h_out, avg_pool_w_out = torch.split(y, [h, w], dim=2)  # 分割成 (n, mid_c, h, 1) 和 (n, mid_c, w, 1)
+        avg_pool_w_out = avg_pool_w_out.permute(0, 1, 3, 2)  # 恢复到 (n, mid_c, 1, w)
+        attention_h = self.conv_h(avg_pool_h_out)  # 生成注意力权重，形状为 (n, c, h, 1)
+        attention_w = self.conv_w(avg_pool_w_out)  # 同理，(n, c, 1, w)
+        return x * attention_h * attention_w  # 加权输出
+
+
 class SpatialAttention(nn.Module):
     """Spatial-attention module for feature recalibration.
 
@@ -611,6 +669,36 @@ class CBAM(nn.Module):
             (torch.Tensor): Attended output tensor.
         """
         return self.spatial_attention(self.channel_attention(x))
+
+
+class CCAM(nn.Module):
+    """
+    通道坐标注意力机制模块。
+    """
+
+    def __init__(self, c1, r):
+        """
+        初始化通道坐标注意力机制模块。
+
+        Args:
+            c1 (int): 输入通道数。
+            r (int): 中间通道缩减比例，建议为不小于 8 的可将输入通道数整除的值。
+        """
+        super().__init__()
+        self.cam = ChannelAttention(c1)
+        self.ca = CoordinateAttention(c1, r)
+
+    def forward(self, x):
+        """
+        通道坐标注意力的前向传播。
+
+        Args:
+            x (torch.Tensor): 输入张量。
+
+        Returns:
+            (torch.Tensor): 经注意力加权后的输出张量。
+        """
+        return self.ca(self.cam(x))
 
 
 class Concat(nn.Module):
